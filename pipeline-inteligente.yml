@@ -1,32 +1,46 @@
-name: Aprendendo Artefatos
+cat << 'EOF' > .github/workflows/pipeline-inteligente.yml
+name: Pipeline Inteligente e Artefatos
 
-on: 
-  push:
+on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+  push:
+    branches:
+      - 'feature/*'
+    paths:
+      - 'src/**'
+      - '!src/docs/**'
 
 jobs:
-  gerador: 
+  job_gerador:
     name: Produzir Arquivo
     runs-on: ubuntu-latest
     steps:
       - name: Criar relatório de teste
-        run: echo "Sucesso! Artefato gerado em $(date)" > relatorio.txt
+        run: |
+          mkdir saida_build
+          echo "Sucesso! Relatorio 1 gerado em $(date)" > saida_build/relatoriol.txt
+          echo "Relatorio 2 gerado sem erros." > saida_build/relatorio2.txt
 
       - name: Salvar Artefato
-        uses: actions/upload-artifact@v4 
+        uses: actions/upload-artifact@v4
         with:
-          name: meu-pacote 
-          path: relatorio.txt 
+          name: meus-relatorios-oficiais
+          path: saida_build/
 
-  consumidor: 
+  job_auditoria:
     name: Ler Arquivo
     runs-on: ubuntu-latest
-    needs: [gerador] 
+    needs: [job_gerador]
     steps:
       - name: Recuperar Artefato
-        uses: actions/download-artifact@v4 
+        uses: actions/download-artifact@v4
         with:
-          name: meu-pacote 
+          name: meus-relatorios-oficiais
 
       - name: Exibir Conteúdo
-        run: cat relatorio.txt
+        run: |
+          ls -R
+          cat saida_build/relatoriol.txt
+EOF
