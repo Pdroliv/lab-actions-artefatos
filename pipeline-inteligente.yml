@@ -1,0 +1,53 @@
+name: Aprendendo Artefatos
+
+on: 
+  # Regra 1: Botão manual na interface [cite: 25]
+  workflow_dispatch:
+  
+  # Regra 2: Rodar sozinho todos os dias às 02:00 
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Regras 3 e 4: Filtros de Branch e Caminho com exceção 
+  push:
+    branches:
+      - 'feature/*'
+    paths:
+      - 'src/**'
+      - [cite_start]'!src/docs/**' # O símbolo ! atua como exceção [cite: 30]
+
+jobs:
+  # Etapa 3: Produtor de Artefatos [cite: 31]
+  job_gerador: 
+    name: Produzir Arquivo
+    [cite_start]runs-on: ubuntu-latest # [cite: 33]
+    steps:
+      - name: Criar relatório de teste
+        # Cria a pasta e os dois arquivos exigidos 
+        run: |
+          mkdir saida_build
+          echo "Sucesso! Relatorio 1 gerado em $(date)" > saida_build/relatorio1.txt
+          echo "Relatorio 2 gerado sem erros." > saida_build/relatorio2.txt
+
+      - name: Salvar Artefato
+        [cite_start]uses: actions/upload-artifact@v4 # [cite: 35]
+        with:
+          [cite_start]name: meus-relatorios-oficiais # Nome exigido pelo exercício 
+          [cite_start]path: saida_build/ # 
+
+  # Etapa 4: Consumidor de Artefatos [cite: 37]
+  job_auditoria: 
+    name: Ler Arquivo
+    [cite_start]runs-on: ubuntu-latest # [cite: 39]
+    [cite_start]needs: [job_gerador] # Aguarda o job_gerador terminar [cite: 39]
+    steps:
+      - name: Recuperar Artefato
+        [cite_start]uses: actions/download-artifact@v4 # [cite: 40]
+        with:
+          [cite_start]name: meus-relatorios-oficiais # [cite: 40]
+
+      - name: Exibir Conteúdo
+        # Prova que os arquivos sobreviveram listando as pastas e lendo o arquivo [cite: 41]
+        run: |
+          ls -R 
+          cat relatorio1.txt
